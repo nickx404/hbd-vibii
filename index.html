@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050713">
+  <meta name="description" content="A little birthday adventure across a very big universe. Made with love, by Adhi.">
+  <title>Mission: Birthday Boy · From Adhi</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="font-lab.css">
+  <script src="content.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div id="starfield" aria-hidden="true">
+    <div class="bg-galaxy bg-galaxy-one"></div>
+    <div class="bg-galaxy bg-galaxy-two"></div>
+    <div class="bg-planet bg-planet-blue"></div>
+    <div class="bg-planet bg-planet-ringed"></div>
+    <div class="bg-planet bg-planet-rose"></div>
+    <div class="bg-comet"></div>
+    <div class="bg-comet bg-comet-two"></div>
+  </div>
+  <header class="topbar">
+    <a class="brand" href="#launch" aria-label="Mission Birthday Boy, return to launch"><span class="brand-mark">✳</span><span>ADHI'S SPACE AGENCY<small>DEPARTMENT OF VERY IMPORTANT BIRTHDAYS</small></span></a>
+    <span class="mission-date">19 OCTOBER 2026</span>
+  </header>
+  <main id="main">
+    <nav class="journey" aria-label="Your journey through our universe"><div class="journey-heading"><span>OUR LITTLE UNIVERSE</span><span id="progress-label">01 — 06</span></div><div id="stops" class="stops"></div></nav>
+    <div class="mission-meta"><span><i></i> PERSONAL MISSION · ONE VERY SPECIAL HUMAN</span><span id="coordinates">TRANSMISSION 001 / 006</span></div>
+    <section class="chapter" aria-labelledby="chapter-title">
+      <div class="story"><div id="eyebrow" class="eyebrow"></div><h1 id="chapter-title"></h1><p id="chapter-copy" class="chapter-copy"></p><div id="actions" class="actions"></div><p id="aside" class="aside"></p></div>
+      <div class="scene-wrap"><div id="scene" class="scene"></div><div id="scene-caption" class="scene-caption"></div></div>
+    </section>
+    <div id="discovery" class="discovery" aria-live="polite"></div>
+    <footer><span>A very big universe. A very easy choice. You.</span><div class="footer-controls"><button id="back" class="text-button">← Previous stop</button><span class="signature">a little mission by <b>Adhi ♡</b></span></div></footer>
+  </main>
+  <div id="warp" class="warp" aria-hidden="true"><span>HOLD ON, BIRTHDAY BOY...</span></div>
+  <dialog id="photo-dialog"><button class="dialog-close" aria-label="Close photo">×</button><div id="photo-detail"></div></dialog>
+  <dialog id="letter-dialog"><button class="dialog-close" aria-label="Close letter">×</button><span class="eyebrow">A TRANSMISSION JUST FOR YOU</span><h2>My Jingalanji,</h2><div id="letter-body"></div><p class="letter-signature">Your Adhi ♡</p><small>A draft from the heart — awaiting Adhi's personal touch.</small></dialog>
+</body>
+</html>
