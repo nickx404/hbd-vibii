@@ -36,3 +36,57 @@
 @media(max-width:700px){.wish-card{padding:10px}.wish-card strong{font-size:21px}.wish-card span{font-size:10px}}
 
 .mic-controls{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:4px 12px 18px}.mic-controls .text-button{color:var(--muted);font-size:10px}.blow-meter{width:min(220px,75%);height:8px;background:#e6edff1a;border-radius:10px;overflow:hidden}.blow-meter i{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--teal),var(--yellow));border-radius:inherit}.mic-controls p{margin:0;color:var(--ink);font-size:12px;line-height:1.6;max-width:340px}.candle-flames{transform-origin:300px 280px}
+
+/* Keep the journey and illustrated scenes comfortable on phones and tablets. */
+@media(max-width:900px){
+  .chapter{grid-template-columns:minmax(0,1fr);min-height:auto;gap:20px;padding:28px 0 22px}
+  .story{min-width:0}
+  .scene-wrap{width:100%;max-width:580px;justify-self:center;align-self:center;overflow:clip}
+  .scene{max-height:none}
+  .chapter-copy{font-size:15px;max-width:560px}
+  .stop{min-width:0;min-height:48px}
+  .stop-label{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+  .actions>button{min-height:48px;max-width:100%}
+  .text-button{min-height:44px;font-size:12px}
+  .secondary-button{font-size:13px}
+  .aside{font-size:11px;line-height:1.7}
+  .scene-caption{font-size:9px;line-height:1.7;letter-spacing:1px}
+  .style-picker{position:static;grid-row:1;justify-self:center;max-width:100%;margin:8px 0}
+  .style-picker button{min-height:44px;padding:10px 14px;font-size:12px}
+  .scene[data-chapter="launch"]{aspect-ratio:auto}
+  .scene[data-chapter="launch"]>svg{grid-row:2;height:auto;aspect-ratio:600/510}
+  .photo-note{position:static;grid-row:3;margin:0 12px 12px;font-size:11px;line-height:1.6}
+  .mic-controls p{font-size:14px}
+  .mic-controls .text-button{font-size:12px}
+  dialog{max-height:calc(100dvh - 32px);padding:48px 24px 28px;overflow:auto;overscroll-behavior:contain}
+  .dialog-close{width:44px;height:44px;top:4px;right:8px}
+  .warp span{padding:24px;text-align:center;line-height:1.8;letter-spacing:3px}
+}
+@media(max-width:600px){
+  .topbar{padding:20px 5%}
+  main{padding:0 5%}
+  .brand{font-size:11px}
+  .brand small{font-size:6px;letter-spacing:.8px;line-height:1.5}
+  .journey{padding-top:20px}
+  .journey-heading{font-size:9px;letter-spacing:1.4px;margin-bottom:14px}
+  .stops{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 8px;padding-bottom:10px}
+  .stops::before{display:none}
+  .stop{flex-direction:row;align-items:center;gap:7px;padding:7px 0}
+  .stop-number{width:28px;height:28px;font-size:10px}
+  .stop-label{font-size:11px;padding:0;background:none}
+  .mission-meta{gap:12px;align-items:flex-start;padding-top:18px;font-size:8px;letter-spacing:.7px}
+  #coordinates{font-size:8px;line-height:1.7}
+  .chapter{padding-top:24px;gap:18px}
+  .eyebrow{font-size:9px;line-height:1.7;letter-spacing:1px}
+  .chapter-copy{line-height:1.8}
+  .scene-wrap{margin-top:0}
+  .primary-button{justify-content:space-between;gap:16px;font-size:14px}
+  .actions{gap:12px}
+  .actions>.primary-button,.actions>.secondary-button{width:100%}
+  footer{flex-direction:column;align-items:stretch;gap:10px;font-size:11px;line-height:1.7}
+  .footer-controls{flex-direction:row;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .discovery:not(:empty){padding:16px;font-size:14px}
+  dialog p{font-size:15px;line-height:1.8}
+  dialog h2{font-size:clamp(24px,7vw,32px)}
+  .photo-art img{max-height:50dvh}
+}
