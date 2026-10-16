@@ -11,7 +11,29 @@
   <script src="content.js" defer></script>
   <script src="app.js" defer></script>
 </head>
-<body>
+<body class="site-locked">
+  <section id="password-gate" class="password-gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="gate-orbit" aria-hidden="true"><span></span><i></i><b></b></div>
+    <div class="gate-card">
+      <div class="gate-mark" aria-hidden="true">✦</div>
+      <h1 id="gate-title">PRIVATE ORBIT<br>CLEARANCE REQUIRED</h1>
+      <p class="gate-copy">Enter the four-digit launch code to begin the mission.</p>
+      <p class="gate-clue"><span>CLUE</span> It is a very special day for us.</p>
+      <form id="password-form" novalidate>
+        <label for="password-input">Launch code</label>
+        <input id="password-input" class="gate-input" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" aria-describedby="password-status">
+        <div class="code-dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div class="gate-keypad" aria-label="Number pad">
+          <button type="button" data-lock-digit="1">1</button><button type="button" data-lock-digit="2">2</button><button type="button" data-lock-digit="3">3</button>
+          <button type="button" data-lock-digit="4">4</button><button type="button" data-lock-digit="5">5</button><button type="button" data-lock-digit="6">6</button>
+          <button type="button" data-lock-digit="7">7</button><button type="button" data-lock-digit="8">8</button><button type="button" data-lock-digit="9">9</button>
+          <button type="button" class="key-blank" tabindex="-1" aria-hidden="true"></button><button type="button" data-lock-digit="0">0</button><button type="button" class="key-delete" aria-label="Delete last digit">⌫</button>
+        </div>
+        <p id="password-status" class="gate-status" aria-live="polite">Awaiting four-digit code.</p>
+        <button class="gate-submit" type="submit">Confirm clearance <span aria-hidden="true">↗</span></button>
+      </form>
+    </div>
+  </section>
   <div id="starfield" aria-hidden="true">
     <div class="bg-galaxy bg-galaxy-one"></div>
     <div class="bg-galaxy bg-galaxy-two"></div>

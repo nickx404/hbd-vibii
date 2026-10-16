@@ -90,3 +90,40 @@
   dialog h2{font-size:clamp(24px,7vw,32px)}
   .photo-art img{max-height:50dvh}
 }
+
+/* Birthday mission clearance */
+.site-locked{overflow:hidden}
+.password-gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;overflow:auto;padding:28px 16px;background:radial-gradient(circle at 18% 18%,#263d714d,transparent 28%),radial-gradient(circle at 82% 78%,#7c45624a,transparent 30%),#050713;color:var(--ink)}
+.password-gate[hidden]{display:none}
+.password-gate::before,.password-gate::after{content:'✦';position:fixed;color:var(--yellow);text-shadow:0 0 18px #f7ce76aa;animation:gate-sparkle 2.4s ease-in-out infinite alternate}
+.password-gate::before{left:8%;top:14%;font-size:30px}.password-gate::after{right:9%;bottom:12%;font-size:20px;animation-delay:-1.1s}
+.gate-card{position:relative;width:min(92vw,430px);padding:38px 42px 30px;border:1px solid #66739980;border-radius:16px;background:linear-gradient(145deg,#121932f2,#090e22f5);box-shadow:0 30px 90px #01030abf,inset 0 1px #ffffff14;text-align:center;overflow:hidden}
+.gate-card::before{content:'';position:absolute;width:150px;height:150px;right:-75px;top:-75px;border:1px solid #f7ce7638;border-radius:50%;box-shadow:0 0 45px #f7ce7614}
+.gate-mark{width:54px;height:54px;display:grid;place-items:center;margin:0 auto 18px;border:1px solid #f7ce7673;border-radius:50%;background:#f7ce760c;color:var(--yellow);font-size:25px;box-shadow:0 0 28px #f7ce7620;animation:gate-mark 8s linear infinite}
+.gate-card h1{margin:0 0 16px;color:var(--coral);font-family:inherit;font-size:clamp(15px,3vw,20px);line-height:1.35;letter-spacing:3px}
+.gate-copy{max-width:33ch;margin:0 auto 10px;color:#d2d9df;font-size:13px;line-height:1.7}
+.gate-clue{max-width:33ch;margin:0 auto 22px;color:var(--muted);font-size:11px;line-height:1.6}.gate-clue span{color:var(--yellow);font-size:9px;font-weight:bold;letter-spacing:1.5px;margin-right:5px}
+#password-form label{display:block;margin-bottom:10px;color:var(--muted);font-size:9px;letter-spacing:1.8px;text-transform:uppercase}
+.gate-input{position:absolute;width:1px;height:1px;opacity:.01;pointer-events:none}
+.code-dots{display:flex;justify-content:center;gap:15px;margin:0 0 22px}
+.code-dots span{width:15px;height:15px;border:1px solid #70809b;border-radius:50%;background:#11182c;transition:transform .18s,background .18s,box-shadow .18s}
+.code-dots span.filled{background:var(--yellow);border-color:var(--yellow);box-shadow:0 0 15px #f7ce7688;transform:scale(1.12)}
+.gate-keypad{display:grid;grid-template-columns:repeat(3,58px);justify-content:center;gap:9px}
+.gate-keypad button{width:58px;height:45px;border:1px solid #536078;border-radius:10px;background:#151d35;color:var(--ink);font-size:15px;transition:transform .14s,border-color .14s,background .14s}
+.gate-keypad button:hover{border-color:var(--yellow);background:#1c2643}.gate-keypad button:active{transform:scale(.94)}
+.gate-keypad .key-delete{color:var(--coral)}.gate-keypad .key-blank{visibility:hidden;pointer-events:none}
+.gate-status{min-height:20px;margin:14px 0 12px;color:var(--muted);font-size:11px;line-height:1.6}
+.gate-submit{width:100%;border:1px solid var(--yellow);border-radius:8px;background:var(--yellow);color:#182630;padding:14px 18px;font-weight:bold;box-shadow:4px 4px 0 #02040c;transition:transform .18s,box-shadow .18s}
+.gate-submit span{float:right}.gate-submit:hover{transform:translateY(-2px);box-shadow:4px 6px 0 #02040c}.gate-submit:active{transform:translateY(1px);box-shadow:2px 2px 0 #02040c}
+.gate-orbit{position:fixed;width:min(78vw,720px);aspect-ratio:1;border:1px solid #7990bc20;border-radius:50%;transform:rotate(-18deg) scaleY(.42);animation:gate-orbit 38s linear infinite;pointer-events:none}
+.gate-orbit span,.gate-orbit i,.gate-orbit b{position:absolute;border-radius:50%}.gate-orbit span{width:16px;height:16px;left:8%;top:38%;background:#ed8d79;box-shadow:0 0 18px #ed8d7970}.gate-orbit i{width:9px;height:9px;right:13%;top:29%;background:var(--yellow);box-shadow:0 0 15px #f7ce7690}.gate-orbit b{width:7px;height:7px;right:30%;bottom:3%;background:#91b3e2}
+.password-gate.wrong .gate-card{animation:gate-shake .38s ease}.password-gate.wrong .gate-status{color:var(--coral)}
+.site-unlocking .password-gate{animation:gate-open .85s cubic-bezier(.65,0,.25,1) forwards}.site-unlocking .gate-card{animation:gate-card-open .85s ease-in forwards}
+@keyframes gate-sparkle{to{opacity:.3;transform:scale(.65) rotate(20deg)}}
+@keyframes gate-mark{to{transform:rotate(360deg)}}
+@keyframes gate-orbit{to{transform:rotate(342deg) scaleY(.42)}}
+@keyframes gate-shake{25%{transform:translateX(-9px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+@keyframes gate-open{55%{opacity:1}100%{opacity:0;transform:scale(1.12)}}
+@keyframes gate-card-open{to{opacity:0;transform:translateY(-18px) scale(.94)}}
+@media(max-width:500px){.password-gate{padding:14px}.gate-card{padding:28px 22px 24px}.gate-card h1{font-size:17px}.gate-copy{font-size:12px}.gate-keypad{grid-template-columns:repeat(3,64px)}.gate-keypad button{width:64px;height:48px}.gate-orbit{width:120vw}}
+@media(prefers-reduced-motion:reduce){.password-gate::before,.password-gate::after,.gate-mark,.gate-orbit{animation:none}.site-unlocking .password-gate{animation:gate-open .25s ease forwards}.site-unlocking .gate-card{animation:none}}

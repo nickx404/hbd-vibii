@@ -12,7 +12,7 @@ From this folder, run `python -m http.server 8765 --bind 127.0.0.1` and open htt
 
 - Edit `content.js` for all chapter dialogue, star messages, photo captions, and the birthday letter.
 - Add real photos to an `assets` directory and set each photo's `src`, such as `assets/athirapally-01.jpg`. Empty paths show explicitly labelled illustrated placeholders.
-- The launch scene provides cartoon and photo-face previews. Choose a local image to compare; it stays in browser memory and disappears on reload. No image is uploaded. Final character likeness requires a supplied reference photo.
+- The launch scene switches between cartoon faces and the supplied photos of Adhi and the birthday boy. Mac joins four scenes in a pet spacesuit with his supplied photo.
 - The birthday letter is a draft for Adhi to review. Remove the draft note in `index.html` after she approves it.
 
 ## Accessibility
