@@ -25,7 +25,7 @@ for (const photo of data.photos) {
 }
 assert.equal(data.starMessages.length, 3, 'Every nickname star must have a discovery.');
 assert.ok(data.letter.length > 0 && data.letter.every(p => typeof p === 'string' && p.trim()), 'The letter needs readable paragraphs.');
-for (const file of ['index.html', 'styles.css', 'app.js', 'font-lab.css', 'assets/mac-face.png', 'assets/adhi-face.png', 'assets/birthday-boy-face.png']) await access(new URL(file, import.meta.url));
+for (const file of ['index.html', 'styles.css', 'app.js', 'font-lab.css', 'assets/mac-face.png', 'assets/adhi-face.png', 'assets/birthday-boy-face.png', 'assets/song.mp3']) await access(new URL(file, import.meta.url));
 const fontCss = await readFile(new URL('font-lab.css', import.meta.url), 'utf8');
 for (const match of fontCss.matchAll(/url\('([^']+)'\)/g)) await access(new URL(match[1], import.meta.url));
 const [html, app, css] = await Promise.all([

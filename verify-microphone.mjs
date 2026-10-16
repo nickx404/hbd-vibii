@@ -21,6 +21,7 @@ function setup(){
   const context=vm.createContext({window:{isSecureContext:true,AudioContext},navigator:{mediaDevices:{getUserMedia:async()=>stream}},performance:{now:()=>time},Uint8Array,Math,
     requestAnimationFrame(fn){frames.set(++frameId,fn);return frameId;},cancelAnimationFrame(id){frames.delete(id);},
     $:element,content:{chapters:[{id:'birthday'}]},current:0,paused:false,candlesBlown:false,
+    musicHeld:false, musicResumeTimer:null,clearTimeout(){},fadeMusic:async()=>{},music:{pause(){}},resumeMusic(){},
     hit(){blown++;}});
   vm.runInContext(`let micStream=null,micContext=null,micFrame=null,micPending=false,micRequest=0;${microphone}\nfunction blowCandles(){candlesBlown=true;hit();stopMicrophone();}`,context);
   return {context,stream,element,enable:()=>vm.runInContext('enableMicrophone()',context),stop:()=>vm.runInContext('stopMicrophone()',context),loud:()=>{loud=true;},

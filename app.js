@@ -12,6 +12,36 @@
   let micStream=null, micContext=null, micFrame=null, micPending=false, micRequest=0;
   const ACCESS_CODE='9524';
   const ACCESS_SESSION_KEY='birthday-mission-cleared';
+  const music = new Audio('assets/song.mp3');
+  music.id='background-music';music.hidden=true;document.body.append(music);
+  music.loop=true;music.preload='none';music.volume=.55;
+  let musicAllowed=false, musicHeld=false, musicFade=null, musicResumeTimer;
+
+  function fadeMusic(target, duration=700){
+    if(musicFade){cancelAnimationFrame(musicFade.frame);musicFade.resolve();musicFade=null;}
+    const volume=music.volume, start=performance.now();
+    return new Promise(resolve=>{
+      const fade={resolve,frame:null};musicFade=fade;
+      function step(now){
+        const progress=Math.min(1,(now-start)/duration);
+        music.volume=volume+(target-volume)*progress;
+        if(progress<1)fade.frame=requestAnimationFrame(step);
+        else{musicFade=null;resolve();}
+      }
+      fade.frame=requestAnimationFrame(step);
+    });
+  }
+  function startMusic(){
+    if(!musicAllowed||musicHeld||document.hidden||!music.paused)return;
+    music.play().catch(()=>{});
+  }
+  function resumeMusic(){
+    clearTimeout(musicResumeTimer);musicHeld=false;
+    startMusic();fadeMusic(.55);
+  }
+  // A fresh gesture also retries playback when a browser blocks autoplay after refresh.
+  document.addEventListener('pointerdown',startMusic);
+  document.addEventListener('keydown',startMusic);
 
   function setupPasswordGate(){
     const gate=$('#password-gate'),form=$('#password-form'),input=$('#password-input');
@@ -22,6 +52,7 @@
       if(sessionStorage.getItem(ACCESS_SESSION_KEY)==='yes'){
         gate.hidden=true;
         document.body.classList.remove('site-locked');
+        musicAllowed=true;startMusic();
         return;
       }
     }catch{}
@@ -52,6 +83,7 @@
       event.preventDefault();
       if(input.value.length!==4){rejectCode('The launch code needs four numbers.');return;}
       if(input.value!==ACCESS_CODE){rejectCode('That code missed its orbit. Try again.');return;}
+      musicAllowed=true;startMusic();
       try{sessionStorage.setItem(ACCESS_SESSION_KEY,'yes');}catch{}
       status.textContent='Clearance confirmed.';
       document.body.classList.add('site-unlocking');
@@ -152,7 +184,8 @@
     changeTimer=setTimeout(()=>{current=index;say('');render();if(!fromHash)history.replaceState(null,'',`#${content.chapters[current].id}`);$('#chapter-title').setAttribute('tabindex','-1');$('#chapter-title').focus({preventScroll:true});window.scrollTo({top:0,behavior:'instant'});},paused?0:350);
     finishTimer=setTimeout(()=>{warp.className='warp';busy=false;},paused?0:850);
   }
-  function stopMicrophone(message='Tap the cake, allow microphone access, then blow gently.'){
+  function stopMicrophone(message='Tap the cake, allow microphone access, then blow gently.', keepMusicQuiet=false){
+    const wasListening=micPending||micStream||micContext;
     micRequest++;micPending=false;
     if(micFrame!==null)cancelAnimationFrame(micFrame);
     micFrame=null;
@@ -167,6 +200,7 @@
     const hint=$('#mic-hint');if(hint)hint.textContent=message;
     const meter=$('.blow-meter i');if(meter)meter.style.width='0%';
     $('.candle-flames')?.style.removeProperty('transform');
+    if(wasListening&&!keepMusicQuiet)resumeMusic();
   }
   async function enableMicrophone(){
     if(candlesBlown||content.chapters[current].id!=='birthday'||micPending||micStream)return;
@@ -175,6 +209,8 @@
       stopMicrophone('Microphone unavailable. Open this page over HTTPS on a supported device to blow the candles.');return;
     }
     const request=++micRequest;
+    clearTimeout(musicResumeTimer);musicHeld=true;
+    const quiet=fadeMusic(0).then(()=>{if(musicHeld)music.pause();});
     micPending=true;$('#mic-toggle').hidden=false;$('#mic-toggle').textContent='Cancel microphone';
     $('#mic-hint').textContent='Allow microphone access to blow the candles.';
     try{
@@ -185,6 +221,8 @@
       const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
       if(request!==micRequest){stream.getTracks().forEach(track=>track.stop());return;}
       micStream=stream;micPending=false;
+      await quiet;
+      if(request!==micRequest)return;
       const analyser=context.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.55;
       context.createMediaStreamSource(stream).connect(analyser);
       stream.getAudioTracks().forEach(track=>track.addEventListener('ended',()=>stopMicrophone('Microphone disconnected. Tap the cake to reconnect.'),{once:true}));
@@ -221,13 +259,14 @@
   function blowCandles(){
     if(candlesBlown)return;
     candlesBlown=true;
-    stopMicrophone();
+    stopMicrophone(undefined,true);
     $('.mic-controls')?.remove();
     $('#scene').classList.add('candles-out');
     $('#birthday-cake').setAttribute('aria-disabled','true');
     $('#birthday-cake').setAttribute('aria-label','Candles blown. Your wish is on its way.');
     $('.wish-card').innerHTML='<strong>Make a wish.</strong><span>Keep it close. Let the universe do its thing.</span>';
     if(!paused)confetti();
+    musicResumeTimer=setTimeout(resumeMusic,paused?0:3000);
   }
   function confetti(){const layer=document.createElement('div');layer.className='confetti';layer.setAttribute('aria-hidden','true');for(let i=0;i<20;i++){const piece=document.createElement('span');piece.textContent=i%2?'✦':'·';piece.style.cssText=`--x:${Math.cos(i)*230}px;--y:${Math.sin(i)*200}px;animation-delay:${i*.025}s;color:${i%2?'#f7ce76':'#ed947e'}`;layer.append(piece);}$('#scene').append(layer);setTimeout(()=>layer.remove(),3000);}
   function openPhoto(index){const p=content.photos[index];$('#photo-detail').innerHTML=`<div class="photo-art">${p.src?`<img src="${escape(p.src)}" alt="${escape(p.caption)}">`:`<svg viewBox="0 0 400 260" role="img" aria-label="Illustrated Athirapally waterfall, photo placeholder">${landscape()}</svg>`}</div><h2>${escape(p.title)}</h2><p>${escape(p.caption)}</p>${!p.src?`<p class="placeholder-note">${escape(p.placeholder)}</p>`:''}`;$('#photo-dialog').showModal();}
@@ -235,8 +274,8 @@
   $('#scene').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-action]')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));}});
   function updateMotion(){paused=reduced.matches;document.body.classList.toggle('reduce-motion',paused);document.body.classList.toggle('motion-enabled',!paused);if(paused){clearTimeout(changeTimer);clearTimeout(finishTimer);$('#warp').className='warp';busy=false;}}
   reduced.addEventListener('change',updateMotion);
-  document.addEventListener('visibilitychange',()=>{document.body.classList.toggle('hidden-tab',document.hidden);if(document.hidden)stopMicrophone();});
-  window.addEventListener('pagehide',()=>stopMicrophone());
+  document.addEventListener('visibilitychange',()=>{document.body.classList.toggle('hidden-tab',document.hidden);if(document.hidden){stopMicrophone();music.pause();}else startMusic();});
+  window.addEventListener('pagehide',()=>{stopMicrophone();music.pause();});
   new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('offscreen',!entry.isIntersecting);},{threshold:0}).observe($('#scene'));
   $('#back').onclick=()=>navigate(current-1);$('.brand').onclick=e=>{e.preventDefault();navigate(0);};
   window.addEventListener('hashchange',()=>{const index=content.chapters.findIndex(c=>c.id===location.hash.slice(1));if(index>=0)navigate(index,true);});

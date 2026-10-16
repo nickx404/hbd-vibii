@@ -27,6 +27,8 @@ Published with GitHub Pages at https://nickx404.github.io/hbd-vibii/. Changes pu
 
 ## Microphone candles
 
+The supplied `assets/song.mp3` plays after password clearance. Tapping the cake fades and pauses the song before microphone analysis begins. Playback resumes from the same position after the three-second confetti animation, or when microphone access is cancelled or denied. The song loops while exploring; browsers that block playback after a refresh retry it on the next tap or key press.
+
 On Birthday landing, tap the cake, allow microphone access, and blow for about half a second. The live level meter appears below the cake. Input is analysed locally without recording or uploading audio. The microphone stops after the candles go out, when cancelled, when navigating to another chapter, or when the page is hidden. Microphone access is required; tapping the cake only starts the microphone and never extinguishes candles.
 
 Microphone access requires HTTPS when hosted (localhost works for desktop preview). Opening an HTTP LAN address on a phone will not enable microphone access. The detector reuses the reference card's volume threshold, so loud background sounds can also trigger it.
