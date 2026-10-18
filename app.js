@@ -5,6 +5,7 @@
   const escape = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let current = Math.max(0, content.chapters.findIndex(c => c.id === location.hash.slice(1)));
   let connected = false, hugged = false, candlesBlown = false, busy = false, style = 'cartoon';
+  let memoryMode = 'cluster', memoryPage = 0, activeModalMemoryIndex = -1;
   const face = 'assets/adhi-face.png';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let paused = reduced.matches;
@@ -124,6 +125,11 @@
   function landscape(){return `<rect width="400" height="260" fill="#23474b"/><path d="M0 130L70 50 140 140 230 50 400 140V260H0" fill="#315f59"/><path d="M0 170L95 90 145 150 235 95 400 175V260H0" fill="#48796b"/><path d="M175 107Q200 100 226 110L243 229H153Z" fill="#b7e0d0"/><path d="M185 112l-15 112m30-113-3 120m17-117 12 113" stroke="#e0f4dd" stroke-width="5" stroke-dasharray="15 15" class="water"/><ellipse cx="200" cy="237" rx="94" ry="16" fill="#76b2a8"/>${sparkle(328,52,15)}<path d="M0 244Q50 204 120 250M288 260q30-65 112-45" stroke="#193a39" stroke-width="35" fill="none"/>`;}
   function rocket(){return `<g transform="translate(118 194) rotate(-28)" class="rocket"><path d="M-13 49L0 85 13 49" fill="#f7ce76" class="pulse"/><path d="M-19 3Q-50 20-32 54L-12 43M19 3Q50 20 32 54L12 43" fill="#df806e" stroke="#233c43" stroke-width="3"/><path d="M0-60Q-32-25-21 45H21Q32-25 0-60Z" fill="#f4ead1" stroke="#233c43" stroke-width="3"/><path d="M-17-35Q0-66 17-35" fill="#ed947e"/><circle cy="-8" r="13" fill="#4b777c" stroke="#ed947e" stroke-width="5"/><path d="M-13 33h26" stroke="#7c9c94" stroke-width="3"/></g>`;}
   function frame(i,x,y,angle){const p=content.photos[i];return `<g transform="translate(${x} ${y}) rotate(${angle})" class="hotspot" tabindex="0" role="button" aria-label="Open memory: ${escape(p.title)}" data-action="photo-${i}"><rect class="hit-area" x="-56" y="-58" width="112" height="129" rx="3" fill="#f0e5cc"/>${p.src ? `<image href="${escape(p.src)}" x="-49" y="-51" width="98" height="89" preserveAspectRatio="${escape(p.position || 'xMidYMid')} slice"/>` : `<svg x="-49" y="-51" width="98" height="89" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">${landscape()}</svg>`}<text x="0" y="53" text-anchor="middle" fill="#355152" font-size="7">${escape(p.title)}</text>${!p.src ? '<text x="0" y="64" text-anchor="middle" fill="#8c7161" font-size="5">PHOTO PLACEHOLDER</text>' : ''}</g>`;}
+  function memoryFrame(i,x,y,angle=0,scale=1){
+    const p=content.memoriesPhotos?.[i];
+    if(!p)return '';
+    return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})" class="hotspot" tabindex="0" role="button" aria-label="Open memory: ${escape(p.title)}" data-action="memory-${i}"><rect class="hit-area" x="-50" y="-53" width="100" height="116" rx="4" fill="#f0e5cc"/><image href="${escape(p.src)}" x="-44" y="-47" width="88" height="80" preserveAspectRatio="xMidYMid slice"/><text x="0" y="44" text-anchor="middle" fill="#355152" font-size="6.5" font-weight="bold">${escape(p.title)}</text><text x="0" y="53" text-anchor="middle" fill="#8c7161" font-size="5">${i+1} / ${content.memoriesPhotos.length}</text></g>`;
+  }
   function petAstronaut(x, y, scale) {
     return `<g transform="translate(${x} ${y}) scale(${scale})" role="img" aria-label="Mac, our pet astronaut"><g class="float-other"><path d="M28 13q35-15 28-35" fill="none" stroke="#ed947e" stroke-width="13" stroke-linecap="round"/><rect x="-37" y="-13" width="20" height="40" rx="8" fill="#537c79" stroke="#253e45" stroke-width="3"/><path d="M-29 6q29-15 58 0l7 31h-72Z" fill="#e6debd" stroke="#253e45" stroke-width="3"/><path d="M-28 29v18h17V28M10 28v19h18V29" fill="#ed947e" stroke="#253e45" stroke-width="3" stroke-linejoin="round"/><ellipse cy="-36" rx="43" ry="40" fill="#f4ebcf" stroke="#253e45" stroke-width="4"/><ellipse cy="-36" rx="34" ry="32" fill="url(#visor)" stroke="#729595" stroke-width="3"/><clipPath id="mac-face-clip"><ellipse cy="-36" rx="31" ry="29"/></clipPath><image href="assets/mac-face.png" x="-35" y="-73" width="70" height="70" preserveAspectRatio="xMidYMid slice" clip-path="url(#mac-face-clip)"/><path d="M-25-53q5-10 15-12" fill="none" stroke="#fff8e5" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/><rect x="-19" y="8" width="38" height="17" rx="4" fill="#f8edcf" stroke="#314a4d" stroke-width="2"/><text y="20" text-anchor="middle" fill="#203c44" font-size="11" font-weight="bold">MAC</text></g></g>`;
   }
@@ -133,9 +139,37 @@
     if(c.id==='cinema') art=`<circle cx="300" cy="310" r="220" fill="url(#halo)"/><ellipse cx="300" cy="400" rx="218" ry="63" fill="#558376"/><path d="M105 409q195 65 390-1" fill="none" stroke="#85a18a" stroke-width="3"/><path d="M180 132v171m244-171v171" stroke="#6e8d89" stroke-width="7"/><rect x="158" y="106" width="288" height="161" rx="6" fill="#e9ddbe" stroke="#668b85" stroke-width="8"/><rect x="170" y="118" width="264" height="136" fill="#233d48"/><circle cx="302" cy="177" r="32" fill="#ed947e" class="pulse"/>${sparkle(230,155,13)}${sparkle(367,194,10)}<text x="302" y="234" text-anchor="middle" fill="#e9ddbe" font-size="10" letter-spacing="3">THE MOVIE IS STILL PLAYING</text>${astronaut(203,334,.7,true)}<g class="hotspot" tabindex="0" role="button" aria-label="Wake the sleeping birthday boy" data-action="sleep"><rect class="hit-area" x="307" y="261" width="112" height="150" fill="transparent" rx="25"/>${astronaut(361,340,.8,false,true)}<g class="snore" fill="#f7ce76" font-weight="bold"><text x="409" y="276" font-size="17">z</text><text x="430" y="255" font-size="25">z</text><text x="455" y="227" font-size="32">Z</text></g></g><g class="float-other hotspot" tabindex="0" role="button" aria-label="Investigate the snacks" data-action="snacks"><rect class="hit-area" x="63" y="171" width="80" height="95" fill="transparent" rx="20"/><path d="M77 205h53l-9 50H86Z" fill="#ed947e" stroke="#293d43" stroke-width="3"/><path d="M88 209l4 40m12-40v40m12-40-4 40" stroke="#f8e9ca" stroke-width="6"/><path d="M77 204q-8-17 6-19-2-19 15-12 10-19 20-1 20-3 14 16 15 12-2 18" fill="#f7ce76" stroke="#293d43" stroke-width="3"/></g>${bubble(c.speech,337,49)}${sparkle(88,334,13)}`;
     if(c.id==='stars') art=`<circle cx="300" cy="270" r="225" fill="url(#halo)"/><path d="M143 190L433 172 304 346Z" fill="${connected?'#f7ce760d':'none'}" stroke="${connected?'#f7ce76':'#59736c'}" stroke-width="${connected?3:1}" stroke-dasharray="${connected?'0':'4 8'}" class="pulse"/>${[ [143,190,'Jalubulu'],[433,172,'Galubulu'],[304,346,'Jingalanji']].map(([x,y,label],i)=>`<g class="hotspot float${i===1?'-other':''}" tabindex="0" role="button" aria-label="Discover ${label}" data-action="star-${i}"><circle class="hit-area" cx="${x}" cy="${y}" r="48" fill="transparent"/>${sparkle(x,y,36)}<text x="${x}" y="${y+66}" class="name-label">${label}</text></g>`).join('')}${astronaut(218,285,.43,true)}${astronaut(280,280,.43,false)}${bubble(c.speech,323,59)}<text x="300" y="449" class="small-label">${connected?'OFFICIALLY CONNECTED. ALWAYS OURS.':'THREE LITTLE STARS. OUR LITTLE SECRET.'}</text>${sparkle(76,354,9)}${sparkle(501,334,12)}`;
     if(c.id==='galaxy') art=`<circle cx="300" cy="270" r="250" fill="url(#halo)"/><g class="spin" fill="none" stroke="#8eb6a0"><ellipse cx="300" cy="270" rx="235" ry="112" transform="rotate(-25 300 270)" opacity=".2" stroke-width="25"/><ellipse cx="300" cy="270" rx="195" ry="82" transform="rotate(35 300 270)" opacity=".2" stroke-width="15"/><ellipse cx="300" cy="270" rx="150" ry="60" transform="rotate(-25 300 270)" opacity=".3" stroke-width="8"/></g><svg x="200" y="184" width="200" height="160" viewBox="0 0 400 260" style="border-radius:50%">${landscape()}</svg>${frame(0,138,188,-12)}${frame(1,443,205,12)}${frame(2,165,376,-7)}${frame(3,425,380,9)}${astronaut(300,445,.34,true)}${bubble(c.speech,345,65)}${sparkle(80,320,14)}${sparkle(460,104,10)}`;
+    if(c.id==='memories'){
+      const list=content.memoriesPhotos||[];
+      const total=list.length;
+      let framesArt='';
+      if(memoryMode==='cluster'){
+        const start=(memoryPage*5)%total;
+        const slots=[[145,175,-8,1.02],[455,175,8,1.02],[300,240,0,1.14],[160,355,6,0.98],[440,360,-7,0.98]];
+        framesArt=slots.map((pos,idx)=>{const pIdx=(start+idx)%total;return memoryFrame(pIdx,pos[0],pos[1],pos[2],pos[3]);}).join('');
+      } else if(memoryMode==='orbit'){
+        const orbitPhotos=Math.min(8,total);
+        const start=(memoryPage*8)%total;
+        const angleStep=(2*Math.PI)/orbitPhotos;
+        framesArt=`<g class="orbit-slow">`;
+        for(let j=0;j<orbitPhotos;j++){
+          const angle=j*angleStep;
+          const ox=300+Math.cos(angle)*195;
+          const oy=255+Math.sin(angle)*125;
+          const pIdx=(start+j)%total;
+          framesArt+=memoryFrame(pIdx,Math.round(ox),Math.round(oy),Math.round((angle*180)/Math.PI*0.3),0.78);
+        }
+        framesArt+=`</g>`;
+      } else if(memoryMode==='grid'){
+        const start=(memoryPage*6)%total;
+        const gridSlots=[[140,165,0,0.86],[300,165,0,0.86],[460,165,0,0.86],[140,325,0,0.86],[300,325,0,0.86],[460,325,0,0.86]];
+        framesArt=gridSlots.map((pos,idx)=>{const pIdx=(start+idx)%total;return memoryFrame(pIdx,pos[0],pos[1],pos[2],pos[3]);}).join('');
+      }
+      art=`<circle cx="300" cy="270" r="245" fill="url(#halo)"/><ellipse cx="300" cy="255" rx="230" ry="145" fill="none" stroke="#ed947e" stroke-width="1.5" stroke-dasharray="4 8" opacity=".35"/><ellipse cx="300" cy="255" rx="175" ry="95" fill="none" stroke="#7cb8ac" stroke-width="1" stroke-dasharray="2 6" opacity=".3"/><circle cx="300" cy="255" r="32" fill="url(#planet)" opacity=".6"/><circle cx="300" cy="255" r="20" fill="#f7ce76" class="pulse" opacity=".7"/>${framesArt}${astronaut(70,255,0.48,true)}${astronaut(530,255,0.48,false)}${bubble(c.speech,345,65)}${sparkle(95,115,16)}${sparkle(505,375,14)}${sparkle(215,445,12)}`;
+    }
     if(c.id==='nebula') art=`<g class="pulse"><ellipse cx="300" cy="260" rx="270" ry="220" fill="url(#nebula)"/><ellipse cx="250" cy="305" rx="210" ry="125" fill="url(#halo)"/></g><g class="orbit" fill="none" stroke="#bd99a0" stroke-opacity=".25"><ellipse cx="300" cy="270" rx="240" ry="123" transform="rotate(-30 300 270)"/><ellipse cx="300" cy="270" rx="205" ry="160" transform="rotate(30 300 270)"/></g><g id="adhi">${astronaut(205,280,.9,true)}</g><g id="husband">${astronaut(397,285,.9,false)}</g>${hugged?'<text x="305" y="210" fill="#ed947e" font-size="42" text-anchor="middle" class="pulse">♡</text>':''}${bubble(c.speech,319,83)}${sparkle(96,272,20,'#ed947e')}${sparkle(461,361,21)}${sparkle(231,419,12)}<text x="300" y="459" class="small-label">DISTANCE BETWEEN US: ${hugged?'ZERO. JUST RIGHT.':'ONE LITTLE HUG.'}</text>`;
     if(c.id==='birthday') art=`<circle cx="300" cy="270" r="233" fill="url(#halo)"/><ellipse cx="300" cy="399" rx="211" ry="67" fill="#528578"/><path d="M101 410q205 52 399-2" fill="none" stroke="#9eb192" stroke-width="3"/>${astronaut(161,322,.7,true)}${astronaut(438,322,.7,false)}<g class="float-other"><g id="birthday-cake" class="hotspot" tabindex="0" role="button" aria-label="Enable microphone to blow the candles" aria-disabled="${candlesBlown}" data-action="blow-candles"><rect class="hit-area" x="218" y="235" width="164" height="172" rx="24" fill="transparent"/><ellipse cx="300" cy="393" rx="77" ry="15" fill="#294f4d"/><path d="M239 327h122v53q-61 27-122 0Z" fill="#ed947e" stroke="#203c43" stroke-width="3"/><ellipse cx="300" cy="327" rx="61" ry="17" fill="#f8e5c0" stroke="#203c43" stroke-width="3"/><path d="M240 333q8 27 17 8 11 28 22 4 10 23 21 1 11 24 21-2 11 21 20-3 10 15 18-8" fill="#f8e5c0"/><path d="M275 319v-35m25 32v-39m25 42v-35" stroke="#f7ce76" stroke-width="7"/><g class="candle-flames pulse" fill="#ed947e"><path d="M275 278q-12-9 0-24 12 15 0 24M300 271q-12-9 0-24 12 15 0 24M325 278q-12-9 0-24 12 15 0 24"/></g><g class="candle-smoke" fill="none" stroke="#dfdce3" stroke-width="2.5" stroke-linecap="round"><path d="M275 280q-12-12 0-22t0-20M300 273q-12-12 0-22t0-20M325 280q-12-12 0-22t0-20"/></g></g></g><text class="cake-prompt" x="300" y="455" text-anchor="middle" fill="#f7ce76" font-size="14" letter-spacing="2">TAP CAKE TO START</text><path d="M95 163q205 90 410 0" fill="none" stroke="#a5af8d"/>${[130,180,230,280,330,380,430].map((x,i)=>`<path d="M${x} ${177+Math.sin(i/2)*30}l12 26 12-22Z" fill="${i%2?'#ed947e':'#f7ce76'}"/>`).join('')}${bubble(c.speech,319,65)}${sparkle(95,278,18)}${sparkle(485,285,16)}${sparkle(300,144,14)}`;
-    const macPosition = {launch:[475,401,.65], cinema:[283,414,.65], galaxy:[300,375,.62], birthday:[78,410,.62]}[c.id];
+    const macPosition = {launch:[475,401,.65], cinema:[283,414,.65], galaxy:[300,375,.62], memories:[300,435,.55], birthday:[78,410,.62]}[c.id];
     if (macPosition) art += petAstronaut(...macPosition);
     return `<svg viewBox="0 0 600 510" role="group" aria-label="${escape(c.caption)}">${defs}${art}</svg>`;
   }
@@ -144,8 +178,8 @@
     const c=content.chapters[current];
     $('.mic-controls')?.remove();
     $('#eyebrow').textContent=c.kicker;$('#chapter-title').innerHTML=c.title;$('#chapter-copy').innerHTML=c.copy;$('#aside').textContent=c.aside;$('#scene-caption').textContent=c.caption;
-    $('#coordinates').textContent=`TRANSMISSION ${String(current+1).padStart(3,'0')} / 006`;
-    $('#progress-label').textContent=`${String(current+1).padStart(2,'0')} — 06`;
+    $('#coordinates').textContent=`TRANSMISSION ${String(current+1).padStart(3,'0')} / ${String(content.chapters.length).padStart(3,'0')}`;
+    $('#progress-label').textContent=`${String(current+1).padStart(2,'0')} — ${String(content.chapters.length).padStart(2,'0')}`;
     const offscreen=$('#scene').classList.contains('offscreen');
     $('#scene').innerHTML=sceneArt(c);$('#scene').dataset.chapter=c.id;$('#scene').className=`scene scene-enter${hugged&&c.id==='nebula'?' hugging':''}${offscreen?' offscreen':''}${candlesBlown&&c.id==='birthday'?' candles-out':''}`;
     if(c.id==='birthday'){
@@ -162,7 +196,7 @@
       else if(c.id==='birthday'){stopMicrophone();$('#letter-dialog').showModal();}
       else navigate(current+1);
     });$('#actions').append(primary);
-    if(c.id==='stars'||c.id==='nebula'){const skip=document.createElement('button');skip.className='text-button';skip.textContent='Next stop →';skip.onclick=()=>navigate(current+1);$('#actions').append(skip);}
+    if(c.id==='stars'||c.id==='nebula'||c.id==='memories'){const skip=document.createElement('button');skip.className='text-button';skip.textContent='Next stop →';skip.onclick=()=>navigate(current+1);$('#actions').append(skip);}
     if(c.id==='birthday'&&!candlesBlown){
       const controls=document.createElement('div');controls.className='mic-controls';
       controls.innerHTML='<p id="mic-hint" role="status">Tap the cake, allow microphone access, then blow gently.</p><div class="blow-meter" aria-hidden="true" hidden><i></i></div><button id="mic-toggle" class="text-button" type="button" hidden>Stop microphone</button>';
@@ -173,6 +207,22 @@
     if(c.id==='launch'){
       const picker=document.createElement('div');picker.className='style-picker';picker.setAttribute('aria-label','Preview astronaut styles');
       for(const [id,label] of [['cartoon','Cartoon Adhi'],['photo','Photo-face Adhi']]){const button=document.createElement('button');button.textContent=label;button.className=style===id?'selected':'';button.setAttribute('aria-pressed',String(style===id));button.onclick=()=>{style=id;render();};picker.append(button);}$('#scene').append(picker);
+    }
+    if(c.id==='memories'){
+      const picker=document.createElement('div');picker.className='style-picker';picker.setAttribute('aria-label','Choose memory view layout');
+      for(const [id,label] of [['cluster','Polaroids'],['orbit','Orbit Ring'],['grid','Cosmic Grid']]){
+        const button=document.createElement('button');button.textContent=label;button.className=memoryMode===id?'selected':'';button.setAttribute('aria-pressed',String(memoryMode===id));button.onclick=()=>{memoryMode=id;memoryPage=0;render();};picker.append(button);
+      }
+      $('#scene').append(picker);
+      const pageSize=memoryMode==='cluster'?5:memoryMode==='orbit'?8:6;
+      const totalPages=Math.ceil((content.memoriesPhotos||[]).length/pageSize);
+      if(totalPages>1){
+        const paging=document.createElement('div');paging.className='memories-paging';
+        paging.innerHTML=`<button type="button" class="mem-prev" aria-label="Previous photos">◀</button><span>${memoryPage+1} / ${totalPages}</span><button type="button" class="mem-next" aria-label="Next photos">▶</button>`;
+        paging.querySelector('.mem-prev').onclick=()=>{memoryPage=(memoryPage-1+totalPages)%totalPages;render();};
+        paging.querySelector('.mem-next').onclick=()=>{memoryPage=(memoryPage+1)%totalPages;render();};
+        $('#scene').append(paging);
+      }
     }
     $('#stops').replaceChildren(...content.chapters.map((chapter,i)=>{const b=document.createElement('button');b.className=`stop${i===current?' active':i<current?' completed':''}`;if(i===current)b.setAttribute('aria-current','step');b.innerHTML=`<span class="stop-number">${String(i+1).padStart(2,'0')}</span><span class="stop-label">${escape(chapter.label)}</span>`;b.onclick=()=>navigate(i);return b;}));
     $('#back').disabled=current===0;
@@ -269,9 +319,26 @@
     musicResumeTimer=setTimeout(resumeMusic,paused?0:3000);
   }
   function confetti(){const layer=document.createElement('div');layer.className='confetti';layer.setAttribute('aria-hidden','true');for(let i=0;i<20;i++){const piece=document.createElement('span');piece.textContent=i%2?'✦':'·';piece.style.cssText=`--x:${Math.cos(i)*230}px;--y:${Math.sin(i)*200}px;animation-delay:${i*.025}s;color:${i%2?'#f7ce76':'#ed947e'}`;layer.append(piece);}$('#scene').append(layer);setTimeout(()=>layer.remove(),3000);}
-  function openPhoto(index){const p=content.photos[index];$('#photo-detail').innerHTML=`<div class="photo-art">${p.src?`<img src="${escape(p.src)}" alt="${escape(p.caption)}">`:`<svg viewBox="0 0 400 260" role="img" aria-label="Illustrated Athirapally waterfall, photo placeholder">${landscape()}</svg>`}</div><h2>${escape(p.title)}</h2><p>${escape(p.caption)}</p>${!p.src?`<p class="placeholder-note">${escape(p.placeholder)}</p>`:''}`;$('#photo-dialog').showModal();}
-  $('#scene').addEventListener('click',e=>{const hit=e.target.closest('[data-action]');if(!hit)return;const action=hit.dataset.action;if(action==='blow-candles')enableMicrophone();else if(action==='sleep')say('Please don’t disturb him. Watching me watch a movie is exhausting.');else if(action==='snacks')say('The only part of movie night that reliably keeps you awake. Five stars for the snacks. Zero for the stamina.');else if(action.startsWith('star-'))say(content.starMessages[Number(action.slice(5))]);else if(action.startsWith('photo-'))openPhoto(Number(action.slice(6)));});
+  function openPhoto(index){activeModalMemoryIndex=-1;const p=content.photos[index];$('#photo-detail').innerHTML=`<div class="photo-art">${p.src?`<img src="${escape(p.src)}" alt="${escape(p.caption)}">`:`<svg viewBox="0 0 400 260" role="img" aria-label="Illustrated Athirapally waterfall, photo placeholder">${landscape()}</svg>`}</div><h2>${escape(p.title)}</h2><p>${escape(p.caption)}</p>${!p.src?`<p class="placeholder-note">${escape(p.placeholder)}</p>`:''}`;$('#photo-dialog').showModal();}
+  function openMemoryPhoto(index){
+    const list=content.memoriesPhotos||[];
+    if(!list.length)return;
+    const total=list.length;
+    activeModalMemoryIndex=((index%total)+total)%total;
+    const p=list[activeModalMemoryIndex];
+    $('#photo-detail').innerHTML=`<div class="photo-art"><img src="${escape(p.src)}" alt="${escape(p.caption)}"></div><div class="modal-nav-bar"><span class="modal-counter">MEMORY ${String(activeModalMemoryIndex+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}</span><div class="modal-arrows"><button type="button" class="modal-nav-btn prev-memory" aria-label="Previous memory">← Prev</button><button type="button" class="modal-nav-btn next-memory" aria-label="Next memory">Next →</button></div></div><h2>${escape(p.title)}</h2><p>${escape(p.caption)}</p>`;
+    $('#photo-detail .prev-memory').onclick=()=>openMemoryPhoto(activeModalMemoryIndex-1);
+    $('#photo-detail .next-memory').onclick=()=>openMemoryPhoto(activeModalMemoryIndex+1);
+    if(!$('#photo-dialog').open)$('#photo-dialog').showModal();
+  }
+  $('#scene').addEventListener('click',e=>{const hit=e.target.closest('[data-action]');if(!hit)return;const action=hit.dataset.action;if(action==='blow-candles')enableMicrophone();else if(action==='sleep')say('Please don’t disturb him. Watching me watch a movie is exhausting.');else if(action==='snacks')say('The only part of movie night that reliably keeps you awake. Five stars for the snacks. Zero for the stamina.');else if(action.startsWith('star-'))say(content.starMessages[Number(action.slice(5))]);else if(action.startsWith('photo-'))openPhoto(Number(action.slice(6)));else if(action.startsWith('memory-'))openMemoryPhoto(Number(action.slice(7)));});
   $('#scene').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-action]')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));}});
+  window.addEventListener('keydown',e=>{
+    if(!$('#photo-dialog')?.open||activeModalMemoryIndex<0)return;
+    if(e.key==='ArrowLeft'){e.preventDefault();openMemoryPhoto(activeModalMemoryIndex-1);}
+    else if(e.key==='ArrowRight'){e.preventDefault();openMemoryPhoto(activeModalMemoryIndex+1);}
+  });
+  $('#photo-dialog').addEventListener('close',()=>{activeModalMemoryIndex=-1;});
   function updateMotion(){paused=reduced.matches;document.body.classList.toggle('reduce-motion',paused);document.body.classList.toggle('motion-enabled',!paused);if(paused){clearTimeout(changeTimer);clearTimeout(finishTimer);$('#warp').className='warp';busy=false;}}
   reduced.addEventListener('change',updateMotion);
   document.addEventListener('visibilitychange',()=>{document.body.classList.toggle('hidden-tab',document.hidden);if(document.hidden){stopMicrophone();music.pause();}else startMusic();});

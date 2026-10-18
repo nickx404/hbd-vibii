@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const context = { window: {} };
 vm.runInNewContext(await readFile(new URL('content.js', import.meta.url), 'utf8'), context);
 const data = context.window.MISSION_CONTENT;
-const supported = ['launch', 'cinema', 'stars', 'galaxy', 'nebula', 'birthday'];
+const supported = ['launch', 'cinema', 'stars', 'galaxy', 'memories', 'nebula', 'birthday'];
 assert.deepEqual(Array.from(data.chapters, c => c.id), supported, 'Every chapter must map to a supported illustrated scene.');
 for (const chapter of data.chapters) {
   for (const field of ['label', 'kicker', 'title', 'copy', 'action', 'aside', 'caption', 'speech']) {
@@ -18,6 +18,14 @@ for (const chapter of data.chapters) {
 assert.equal(data.photos.length, 4, 'The galaxy has four photo frames.');
 for (const photo of data.photos) {
   assert.ok(photo.title && photo.caption && photo.placeholder, 'Each photo needs accessible text and a fallback label.');
+  if (photo.src) {
+    assert.ok(!/^[a-z]+:|^\/\//i.test(photo.src), 'Use a local photo so the experience works without external services.');
+    await access(new URL(photo.src, import.meta.url));
+  }
+}
+assert.ok(Array.isArray(data.memoriesPhotos) && data.memoriesPhotos.length > 0, 'Memories of us must have photos.');
+for (const photo of data.memoriesPhotos) {
+  assert.ok(photo.title && photo.caption, 'Each memory photo needs a title and caption.');
   if (photo.src) {
     assert.ok(!/^[a-z]+:|^\/\//i.test(photo.src), 'Use a local photo so the experience works without external services.');
     await access(new URL(photo.src, import.meta.url));
@@ -41,4 +49,4 @@ assert.match(app, /sessionStorage\.getItem\(ACCESS_SESSION_KEY\)==='yes'/, 'The 
 assert.match(app, /sessionStorage\.setItem\(ACCESS_SESSION_KEY,'yes'\)/, 'Successful clearance must persist for refreshes in the same tab.');
 assert.match(app, /surface\.inert=true[\s\S]*surface\.inert=false/, 'Page content must stay inert until unlock.');
 assert.match(css, /\.password-gate\[hidden\]\{display:none\}/, 'The accepted lock must leave the visible page.');
-console.log('PASS: six complete chapters, four memory frames, three discoveries, letter, and all configured local assets.');
+console.log('PASS: seven complete chapters, four Athirapally frames, twenty memory photos, discoveries, letter, and all configured local assets.');
